@@ -35,11 +35,46 @@ class CleverTapTests(unittest.TestCase):
                         "Phone":"+14155551234",
                         "Email":"peter@foo.com",
                         }, 
-                    }
+                    },
+
+                {"type":"event",
+                  "FBID":"34322423",
+                  "ts":int(time.time()),
+                  "evtName":"Product viewed",
+                  "evtData":{
+                    "Product name":"Casio Chronograph Watch",
+                    "Category":"Mens Watch",
+                    "Price":59.99,
+                    "Currency":"USD"
+                    },
+                  },
+
+                {"type":"event",
+                  "Identity":"jack@gmail.com",
+                  "ts":int(time.time()),
+                  "evtName":"Charged",
+                  "evtData":{
+                    "Amount":300,
+                    "Currency":"USD",
+                    "Payment mode":"Credit Card",
+                    "Items":[
+                      {
+                        "Category":"books",
+                        "Book name":"The millionaire next door",
+                        "Quantity":1
+                        },
+                      {
+                        "Category":"books",
+                        "Book name":"Achieving inner zen",
+                        "Quantity":4
+                        }
+                      ]
+                    },
+                  },
                 ]
 
         res = self.clevertap.up(data) or {}
-        self.assertEqual(res.get("processedRecords:", 0), 2, "%s records failed"%(len(res.get("unprocessedRecords:", data))))
+        self.assertEqual(res.get("processedRecords:", 0), 4, "%s records failed"%(len(res.get("unprocessedRecords:", data))))
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(CleverTapTests)
