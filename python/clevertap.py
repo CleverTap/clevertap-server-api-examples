@@ -28,6 +28,7 @@ class CleverTap(object):
         self.account_passcode   = account_passcode
         self.req_id             = None
         self.url                = None
+        self.records            = []
 
     def __repr__(self):
         return "%s(account_id=%s, passcode=%s)" % (self.__class__.__name__, self.account_id, self.account_passcode)
@@ -74,7 +75,7 @@ class CleverTap(object):
 
     def _fetch(self, type, query, batch_size=10):
 
-        # create our records cache
+        # reset our records cache
         self.records = []
 
         # validate query
@@ -84,13 +85,13 @@ class CleverTap(object):
             raise Exception(validation_error)
             return
 
-        # construct the request url
+        # construct the base request url
         self.baseurl = '/'.join([self.api_endpoint, "api/%s.json"%type])
 
         # add id, passcode and batch_size to the url as query args
         self.url = "%s?id=%s&p=%s&batch_size=%s"%(self.baseurl, self.account_id, self.account_passcode, batch_size)
 
-        # the request body is the json encoded query
+        # the initial request body is the json encoded query
         body = json.dumps(query)
 
         # request headers
@@ -104,27 +105,33 @@ class CleverTap(object):
         
         # if we have a req_id then make a second request with the req_id
         if self.req_id:
+
+            # convenience inner function to handle req_id requests 
+            def call_records():
+                # make the request
+                res = self._call() or {}
+
+                # parse response
+                content = res.get("CONTENT", {})
+                self.req_id = content.get("req_id", None)
+                new_records = content.get("data", [])
+
+                # add the new records array to our records array
+                self.records += new_records
+
+                # if the request returns a new req_id, update the api url with the new req_id
+                if self.req_id:
+                    self.url = "%s?id=%s&p=%s&req_id=%s"%(self.baseurl, self.account_id, self.account_passcode, self.req_id)
+                else:
+                    self.url = None
+            
+                
             # construct the request url
             # add id, passcode and req_id to the url as query args
             self.url = "%s?id=%s&p=%s&req_id=%s"%(self.baseurl, self.account_id, self.account_passcode, self.req_id)
 
-            def call_records():
-                # make the request
-                res = self._call() or {}
-                content = res.get("CONTENT", {})
-
-                # add the new records array to our records array
-                data = content.get("data", [])
-                self.records += data
-
-                # if the request returns a new req_id, update the url with the new req_id
-                self.req_id = content.get("req_id", None)
-                self.url = "%s?id=%s&p=%s&req_id=%s"%(self.baseurl, self.account_id, self.account_passcode, self.req_id)
-                
             # keep making requests with the new req_id as long as we have a req_id 
             while True:
-                call_records()
-
                 if self.req_id == None:
                     break
                 else:
@@ -134,6 +141,10 @@ class CleverTap(object):
 
 
     def _call(self, **kwargs):
+
+        if self.url == None:
+            print "api url is None"
+            return None
 
         # its always a POST request
         headers_params = kwargs.get('headers_params', {}) 
@@ -237,13 +248,27 @@ class CleverTap(object):
                         return validation_error
                         break
 
-        # TODO
         if type == "profiles":
-            pass
+            fr = data.get("from", None)
+            if not isinstance(fr, (int, long)):
+                validation_error = "query must contain a from date as an integer in the format yyyymmddd: %s"%data
+                return validation_error
 
-        # TODO
+            to = data.get("to", None)
+            if not isinstance(to, (int, long)):
+                validation_error = "query must contain a to date as an integer in the format yyyymmddd: %s"%data
+                return validation_error
+
         if type == "events":
-            pass
+            fr = data.get("from", None)
+            if not isinstance(fr, (int, long)):
+                validation_error = "query must contain a from date as an integer in the format yyyymmddd: %s"%data
+                return validation_error
+
+            to = data.get("to", None)
+            if not isinstance(to, (int, long)):
+                validation_error = "query must contain a to date as an integer in the format yyyymmddd: %s"%data
+                return validation_error
 
         return validation_error
 
