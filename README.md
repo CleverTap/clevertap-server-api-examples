@@ -30,10 +30,10 @@ A basic example Python class that wraps the Server API is included [here](https:
     # upload an array of profiles and/or user action events
     res = clevertap.up(data)
 
-    # download user profiles based on a json query
+    # download user profiles based on a JSON query
     res = clevertap.profiles(query)
 
-    # download user action events based on a json query
+    # download user action events based on a JSON query
     res = clevertap.events(query)
 
 You can find more on example usage in the included unit tests [here](https://github.com/CleverTap/clevertap-server-api-examples/blob/master/python/tests.py).
