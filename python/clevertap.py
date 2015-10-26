@@ -106,6 +106,11 @@ class CleverTap(object):
         # if we have a req_id then make a second request with the req_id
         if self.req_id:
 
+            # construct the initial request url
+            # add id, passcode and req_id to the url as query args
+            self.url = "%s?id=%s&p=%s&req_id=%s"%(self.baseurl, self.account_id, self.account_passcode, self.req_id)
+
+
             # convenience inner function to handle req_id requests 
             def call_records():
                 # make the request
@@ -125,10 +130,6 @@ class CleverTap(object):
                 else:
                     self.url = None
             
-                
-            # construct the request url
-            # add id, passcode and req_id to the url as query args
-            self.url = "%s?id=%s&p=%s&req_id=%s"%(self.baseurl, self.account_id, self.account_passcode, self.req_id)
 
             # keep making requests with the new req_id as long as we have a req_id 
             while True:
