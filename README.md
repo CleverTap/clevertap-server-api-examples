@@ -27,7 +27,7 @@ A basic example Python class that wraps the Server API is included [here](https:
 
     clevertap = CleverTap(YOUR_CT_ACCOUNT_ID, YOUR_CT_ACCOUNT_PASSCODE)
 
-    # upload an array of profiles and/or user action events
+    # upload an array of user profiles and/or user action events
     res = clevertap.up(data)
 
     # download user profiles based on a JSON query
