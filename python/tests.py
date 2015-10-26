@@ -74,7 +74,8 @@ class CleverTapTests(unittest.TestCase):
                 ]
 
         res = self.clevertap.up(data) or {}
-        self.assertEqual(res.get("processedRecords:", 0), 4, "%s records failed"%(len(res.get("unprocessedRecords:", data))))
+        unprocessedRecords = res.get("unprocessedRecords:", [])
+        self.assertEqual(len(unprocessedRecords), 0, "%s records failed"%(len(unprocessedRecords)))
 
     def test_download_events(self):
         query = {"event_name": 
