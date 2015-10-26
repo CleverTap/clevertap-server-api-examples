@@ -21,7 +21,7 @@ import urllib
 import urllib2
 
 class CleverTap(object):
-    api_hostname = 'api.wzrkt.com'
+    api_hostname = 'api.clevertap.com'
 
     def __init__(self, account_id, account_passcode):
         self.account_id         = account_id
