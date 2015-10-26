@@ -18,7 +18,7 @@ class CleverTapTests(unittest.TestCase):
     def test_upload(self):
         data = [
                 {"type":"event",
-                    "Identity":"6264372123",
+                    "Identity":"6264372124",
                     "ts":int(time.time()), 
                     "evtName":"choseNewFavoriteFood", 
                     "evtData":{
@@ -27,7 +27,7 @@ class CleverTapTests(unittest.TestCase):
                     },
 
                 {"type":"profile", 
-                    "Identity":"6264372123",
+                    "Identity":"6264372124",
                     "ts":int(time.time()), 
                     "profileData":{
                         "favoriteColor":random.choice(colors),
@@ -75,6 +75,26 @@ class CleverTapTests(unittest.TestCase):
 
         res = self.clevertap.up(data) or {}
         self.assertEqual(res.get("processedRecords:", 0), 4, "%s records failed"%(len(res.get("unprocessedRecords:", data))))
+
+    def test_download_events(self):
+        query = {"event_name": 
+                "choseNewFavoriteFood",
+                "from": 20150810,
+                "to": 20151025
+                }
+
+        res = self.clevertap.events(query)
+        self.assertTrue( len(res) > 0 )
+
+    def test_download_profiles(self):
+        query = {"event_name":
+                "choseNewFavoriteFood",
+                "from": 20150810,
+                "to": 20151025
+                }
+
+        res = self.clevertap.profiles(query)
+        self.assertTrue( len(res) > 0 )
 
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(CleverTapTests)

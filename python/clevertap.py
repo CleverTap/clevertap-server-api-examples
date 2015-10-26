@@ -38,11 +38,8 @@ class CleverTap(object):
         return 'https://%s' % (self.__class__.api_hostname)
 
 
-    def reset_url(self):
-        self.url = None
-
-
     def up(self, data):
+        """upload an array of profile and/or event dicts"""
 
         # validate data
         validation_error = self._validate("up", data)
@@ -52,10 +49,11 @@ class CleverTap(object):
             return 
 
         # construct the request url
-        self.url = '/'.join([self.url or self.api_endpoint, "up"])
+        self.url = '/'.join([self.api_endpoint, "up"])
 
-        # construct the request arguments
+        # construct the request params
         payload = {"p":self.account_passcode, "d":data}
+        # request args
         args = {"id":self.account_id, "payload":payload}
 
         # request headers
@@ -64,59 +62,101 @@ class CleverTap(object):
         return self._call(args=args, headers_params=headers_params)
 
 
-    def profiles(self, query):
-
-        # TODO
-
-        # validate data
-        validation_error = self._validate("profiles", query)
-
-        if validation_error:
-            raise Exception(validation_error)
-            return
-
-        # construct the request url
-        self.url = '/'.join([self.url or self.api_endpoint, "profiles.json"])
-        #return self._call(args=args, headers_params=headers_params)
+    def profiles(self, query, batch_size=10):
+        """download profiles defined by query"""
+        return self._fetch("profiles", query, batch_size=batch_size)
 
 
-    def events(self, query):
+    def events(self, query, batch_size=10):
+        """download events defined by query"""
+        return self._fetch("events", query, batch_size=batch_size)
 
-        # TODO
 
-        # validate data
-        validation_error = self._validate("events", query)
+    def _fetch(self, type, query, batch_size=10):
+
+        # create our records cache
+        self.records = []
+
+        # validate query
+        validation_error = self._validate(type, query)
 
         if validation_error:
             raise Exception(validation_error)
             return
 
         # construct the request url
-        self.url = '/'.join([self.url or self.api_endpoint, "events.json"])
-        #return self._call(args=args, headers_params=headers_params)
+        self.baseurl = '/'.join([self.api_endpoint, "api/%s.json"%type])
+
+        # add id, passcode and batch_size to the url as query args
+        self.url = "%s?id=%s&p=%s&batch_size=%s"%(self.baseurl, self.account_id, self.account_passcode, batch_size)
+
+        # the request body is the json encoded query
+        body = json.dumps(query)
+
+        # request headers
+        headers_params = {'Content-Type':'application/json;charset=utf-8'}
+
+        # make the request
+        res = self._call(body=body, headers_params=headers_params) or {}
+
+        # initial request is for the req_id
+        self.req_id = res.get("CONTENT", {}).get("req_id", None)
+        
+        # if we have a req_id then make a second request with the req_id
+        if self.req_id:
+            # construct the request url
+            # add id, passcode and req_id to the url as query args
+            self.url = "%s?id=%s&p=%s&req_id=%s"%(self.baseurl, self.account_id, self.account_passcode, self.req_id)
+
+            def call_records():
+                # make the request
+                res = self._call() or {}
+                content = res.get("CONTENT", {})
+
+                # add the new records array to our records array
+                data = content.get("data", [])
+                self.records += data
+
+                # if the request returns a new req_id, update the url with the new req_id
+                self.req_id = content.get("req_id", None)
+                self.url = "%s?id=%s&p=%s&req_id=%s"%(self.baseurl, self.account_id, self.account_passcode, self.req_id)
+                
+            # keep making requests with the new req_id as long as we have a req_id 
+            while True:
+                call_records()
+
+                if self.req_id == None:
+                    break
+                else:
+                    call_records()
+
+        return self.records
 
 
     def _call(self, **kwargs):
-        copy_of_url = self.url
-
-        # reset self.url
-        self.reset_url()
 
         # its always a POST request
-        headers_params = kwargs.get('headers_params', None) 
-        data = urllib.urlencode(kwargs.get('args', {}))
+        headers_params = kwargs.get('headers_params', {}) 
+        args = urllib.urlencode(kwargs.get('args', {}))
+        body = kwargs.get("body", None)
 
         # Create the request
-        req = urllib2.Request(copy_of_url, data, headers_params)
+        req = urllib2.Request(self.url, args, headers_params)
 
-        # Open the request
-        f = urllib2.urlopen(req)
+        if body:
+            req.add_data(body)
 
-        # Get the response 
-        response = f.read()
+        try:
+            # Open the request
+            f = urllib2.urlopen(req)
+            # Get the response 
+            response = f.read()
+            # Close the opened request
+            f.close()
 
-        # Close the opened request
-        f.close()
+        except Exception, e:
+            print e
+            return None
 
         # Parse and return the response
         try:
@@ -127,6 +167,15 @@ class CleverTap(object):
 
         return res
             
+    def _parse_response(self, response):
+        """Parse a response from the API"""
+        try:
+            res = json.loads(response)
+        except Exception, e:
+            e.args += ('API response was: %s' % response)
+            raise e
+
+        return res
 
     def _validate(self, type, data):
         """Simple data validation"""
@@ -188,20 +237,13 @@ class CleverTap(object):
                         return validation_error
                         break
 
+        # TODO
         if type == "profiles":
             pass
 
+        # TODO
         if type == "events":
             pass
 
         return validation_error
 
-    def _parse_response(self, response):
-        """Parse a response from the API"""
-        try:
-            res = json.loads(response)
-        except Exception, e:
-            e.args += ('API response was: %s' % response)
-            raise e
-
-        return res
