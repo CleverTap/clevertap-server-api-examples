@@ -49,6 +49,19 @@ class CleverTapTests(unittest.TestCase):
                     },
                   },
 
+                {'type': 'profile',
+                    'WZRK_G': "-2ce3cca260664f70b82b1c6bb505f462", 
+                    'ts': int(time.time()),
+                    'profileData': {'favoriteFood': 'pizza'}
+                    }, 
+
+                {'type': 'event',
+                    'WZRK_G': "-2ce3cca260664f70b82b1c6bb505f462",
+                    'ts': int(time.time()),
+                    'evtName': 'choseNewFavoriteFood',
+                    'evtData': {}
+                    },
+
                 {"type":"event",
                   "Identity":"jack@gmail.com",
                   "ts":int(time.time()),

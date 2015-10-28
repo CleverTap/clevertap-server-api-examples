@@ -49,18 +49,20 @@ class CleverTap(object):
             raise Exception(validation_error)
             return 
 
-        # construct the request url
-        self.url = '/'.join([self.api_endpoint, "up"])
+        # construct the base request url
+        self.baseurl = '/'.join([self.api_endpoint, "up"])
 
-        # construct the request params
-        payload = {"p":self.account_passcode, "d":data}
-        # request args
-        args = {"id":self.account_id, "payload":payload}
+        # add account_id, and passcode to the url as query args
+        self.url = "%s?id=%s&p=%s"%(self.baseurl, self.account_id, self.account_passcode)
+
+        # the request body is the json encoded data
+        body = json.dumps({"d":data})
 
         # request headers
-        headers_params = {'Content-Type':'application/x-www-form-urlencoded'}
+        headers_params = {'Content-Type':'application/json;charset=utf-8'}
 
-        return self._call(args=args, headers_params=headers_params)
+        # make the request
+        return self._call(body=body, headers_params=headers_params)
 
 
     def profiles(self, query, batch_size=10):
@@ -88,7 +90,7 @@ class CleverTap(object):
         # construct the base request url
         self.baseurl = '/'.join([self.api_endpoint, "api/%s.json"%type])
 
-        # add id, passcode and batch_size to the url as query args
+        # add account_id, passcode and batch_size to the url as query args
         self.url = "%s?id=%s&p=%s&batch_size=%s"%(self.baseurl, self.account_id, self.account_passcode, batch_size)
 
         # the initial request body is the json encoded query
@@ -107,7 +109,7 @@ class CleverTap(object):
         if self.req_id:
 
             # construct the initial request url
-            # add id, passcode and req_id to the url as query args
+            # add account_id, passcode and req_id to the url as query args
             self.url = "%s?id=%s&p=%s&req_id=%s"%(self.baseurl, self.account_id, self.account_passcode, self.req_id)
 
 
@@ -165,6 +167,8 @@ class CleverTap(object):
             response = f.read()
             # Close the opened request
             f.close()
+
+            #print response
 
         except Exception, e:
             print e
