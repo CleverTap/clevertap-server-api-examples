@@ -21,6 +21,8 @@ For more information please see our [Server API documentation](https://support.c
 
 A basic example Python class that wraps the Server API is included [here](https://github.com/CleverTap/clevertap-server-api-examples/blob/master/python/clevertap.py).
 
+To use this example class, manually install it in your project's python path and import accordingly.
+
 ### Example Python Wrapper Class Usage
 
     from clevertap import CleverTap
