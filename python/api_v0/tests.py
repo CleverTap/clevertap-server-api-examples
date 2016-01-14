@@ -87,6 +87,7 @@ class CleverTapTests(unittest.TestCase):
                 ]
 
         res = self.clevertap.up(data) or {}
+        print res
         unprocessedRecords = res.get("unprocessedRecords:", [])
         self.assertEqual(len(unprocessedRecords), 0, "%s records failed"%(len(unprocessedRecords)))
 
