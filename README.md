@@ -19,7 +19,7 @@ For more information please see our [Server API documentation](https://support.c
 
 ## Python
 
-A basic example Python class that wraps the Server API is included [here](https://github.com/CleverTap/clevertap-server-api-examples/blob/master/python/clevertap.py).
+A basic example Python class that wraps the Server API is included [here](https://github.com/CleverTap/clevertap-server-api-examples/blob/master/python/api_v1/clevertap.py).
 
 To use this example class, manually install it in your project's python path and import accordingly.
 
