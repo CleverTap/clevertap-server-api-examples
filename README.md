@@ -30,7 +30,7 @@ To use this example class, manually install it in your project's python path and
     clevertap = CleverTap(YOUR_CT_ACCOUNT_ID, YOUR_CT_ACCOUNT_PASSCODE)
 
     # upload an array of user profiles and/or user action events
-    res = clevertap.up(data)
+    res = clevertap.upload(data)
 
     # download user profiles based on a JSON query
     res = clevertap.profiles(query)
@@ -38,4 +38,4 @@ To use this example class, manually install it in your project's python path and
     # download user action events based on a JSON query
     res = clevertap.events(query)
 
-You can find more on example usage in the included unit tests [here](https://github.com/CleverTap/clevertap-server-api-examples/blob/master/python/tests.py).
+You can find more on example usage in the included unit tests [here](https://github.com/CleverTap/clevertap-server-api-examples/blob/master/python/api_v1/tests.py).
