@@ -90,7 +90,7 @@ class CleverTapTests(unittest.TestCase):
         query = {"event_name":
                 "choseNewFavoriteFood",
                 "props": 
-                    [{"name":"value","value":"pizza"}],
+                [{"name":"value","operator":"contains", "value":"piz"}],
                 "from": 20150810,
                 "to": 20151025
                 }
@@ -103,6 +103,8 @@ class CleverTapTests(unittest.TestCase):
     def test_download_profiles(self):
         query = {"event_name":
                 "choseNewFavoriteFood",
+                "props": 
+                [{"name":"value","operator":"contains", "value":"piz"}],
                 "from": 20150810,
                 "to": 20151025
                 }
