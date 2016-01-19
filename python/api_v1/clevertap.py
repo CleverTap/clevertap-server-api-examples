@@ -145,7 +145,7 @@ class CleverTap(object):
             return None
 
         headers_params = kwargs.get('headers_params', {}) 
-        # add account_id, and passcode to the url as query args
+        # add account_id, and passcode to request headers 
         headers_params['X-CleverTap-Account-Id'] = self.account_id
         headers_params['X-CleverTap-Passcode'] = self.account_passcode
         
