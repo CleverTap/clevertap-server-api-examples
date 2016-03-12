@@ -24,6 +24,17 @@ class CleverTap(object):
     api_hostname = 'api.clevertap.com'
     api_version = 1
 
+    class TargetActions(object):
+        CREATE = "create"
+        ESTIMATE = "estimate"
+        LIST = "list"
+        RESULT = "result"
+        STOP = "stop"
+
+        @classmethod
+        def valid_actions(cls):
+            return [cls.CREATE, cls.ESTIMATE, cls.LIST, cls.RESULT, cls.STOP]
+
     def __init__(self, account_id, account_passcode):
         self.account_id         = account_id
         self.account_passcode   = account_passcode
@@ -62,18 +73,51 @@ class CleverTap(object):
         # make the request
         return self._call(body=body, headers_params=headers_params)
 
+    def targets(self, action, payload):
+
+        # validate 
+        validation_error = self._validate(action, payload)
+
+        if validation_error:
+            raise Exception(validation_error)
+            return
+
+        url_action = None
+
+        if action in self.TargetActions.valid_actions():
+            url_action = action
+
+        if not url_action:
+            print "unknown targets action %s" % action
+            return
+
+        if url_action == self.TargetActions.ESTIMATE:
+            payload['estimate_only'] = True
+            url_action = self.TargetActions.CREATE
+
+        # construct the request url
+        self.url = '/'.join([self.api_endpoint, "targets", "%s.json"%url_action])
+
+        # the request body is the json encoded payload
+        body = json.dumps(payload) if payload else None
+
+        # request headers
+        headers_params = {'Content-Type':'application/json'}
+
+        # make the request
+        return self._call(body=body, headers_params=headers_params)
 
     def profiles(self, query, batch_size=10):
         """download profiles defined by query"""
-        return self._fetch("profiles", query, batch_size=batch_size)
+        return self._fetch_records("profiles", query, batch_size=batch_size)
 
 
     def events(self, query, batch_size=10):
         """download events defined by query"""
-        return self._fetch("events", query, batch_size=batch_size)
+        return self._fetch_records("events", query, batch_size=batch_size)
 
 
-    def _fetch(self, type, query, batch_size=10):
+    def _fetch_records(self, type, query, batch_size=10):
 
         # reset our records cache
         self.records = []
@@ -204,6 +248,45 @@ class CleverTap(object):
             validation_error = "clevertap account passcode missing"
             return validation_error
 
+        if type in [self.TargetActions.CREATE, self.TargetActions.ESTIMATE]:
+            if data is None:
+                return "Push targets action %s requires a payload"%type
+
+            if (data.get("name", None) is None):
+                return "Push targets action %s requires a name"%type
+
+            if (data.get("where", None) is None) and (data.get("segment", None) is None):
+                return "Push targets action %s requires a where or segment value"%type
+
+            if (data.get("where", None) is not None) and (data.get("segment", None) is not None):
+                return "Push targets action %s does not support both a where value and a segment value, specify one or the other"%type
+
+            if (data.get("segment", None) is not None):
+                if data.get("segment") != "all":
+                    return "Push targets action %s segment value must be 'all'"%type
+
+            if (data.get("content", None) is None):
+                return "Push targets action %s requires a content dict"%type
+
+            if (data.get("content", None) is not None):
+                if (data.get("content", {}).get("title", None) is None) or (data.get("content", {}).get("body", None) is None): 
+                    return "Push targets action %s content dict requires a title and a body"%type
+
+            if (data.get("devices", None) is None):
+                return "Push targets action %s requires a devices array"%type
+
+            return validation_error
+
+        if type == self.TargetActions.LIST:
+            # no-op
+            return validation_error
+
+        if type in [self.TargetActions.RESULT, self.TargetActions.STOP]:
+            if (data is None) or (data.get("id", None) is None):
+                validation_error = "Push targets %s action requires a target id"%type
+
+            return validation_error
+
         if type == "upload":
             for record in data or []:
 
@@ -212,12 +295,6 @@ class CleverTap(object):
                     validation_error = "record must contain an identity, FBID, GPID or objectId field: %s"%record
                     return validation_error
                     break
-
-                #ts = record.get("ts", None)
-                #if not isinstance(ts, (int, long)):
-                #    validation_error = "record must contain an unix epoch integer timestamp in a ts field: %s"%record
-                #    return validation_error
-                #    break
 
                 record_type = record.get("type", None)
                 if record_type not in ['profile', 'event']:
@@ -232,13 +309,6 @@ class CleverTap(object):
                         return validation_error
                         break
 
-                    # validate some common profileData fields
-                    #Age = profileData.get("Age", None)
-                    #if Age and not (isinstance(Age, int) or isinstance(Age, str)): 
-                    #    validation_error = "profile Age must be an integer or string: %s"%record
-                    #    return validation_error
-                    #    break
-
                     Phone = profileData.get("Phone", None)
                     if Phone and (not isinstance(Phone, str) or not Phone.startswith("+")): 
                         validation_error = "profile Phone must be a string and start with +<country code>: %s"%record
@@ -251,28 +321,6 @@ class CleverTap(object):
                         validation_error = "record with type event must contain an evtData dict: %s"%record
                         return validation_error
                         break
-
-        #if type == "profiles":
-            #fr = data.get("from", None)
-            #if not isinstance(fr, (int, long)):
-            #    validation_error = "query must contain a from date as an integer in the format yyyymmddd: %s"%data
-            #    return validation_error
-
-            #to = data.get("to", None)
-            #if not isinstance(to, (int, long)):
-            #    validation_error = "query must contain a to date as an integer in the format yyyymmddd: %s"%data
-            #    return validation_error
-
-        #if type == "events":
-            #fr = data.get("from", None)
-            #if not isinstance(fr, (int, long)):
-            #    validation_error = "query must contain a from date as an integer in the format yyyymmddd: %s"%data
-            #    return validation_error
-
-            #to = data.get("to", None)
-            #if not isinstance(to, (int, long)):
-            #    validation_error = "query must contain a to date as an integer in the format yyyymmddd: %s"%data
-            #    return validation_error
 
         return validation_error
 
