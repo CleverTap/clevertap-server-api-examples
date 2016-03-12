@@ -61,5 +61,5 @@ You can find more on example usage in the included unit tests [here](https://git
     # get the results of a target
     res = clevertap.targets(clevertap.TargetActions.RESULT, payload)
 
-You can find more on example push targets usage in the included unit tests [here](https://github.com/CleverTap/clevertap-server-api-examples/blob/master/python/api_v1/push_targets_tests.py).
+You can find more on example push targets usage in the included unit tests [here](https://github.com/CleverTap/clevertap-server-api-examples/blob/master/python/api_v1/push_target_tests.py).
 
