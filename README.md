@@ -40,7 +40,7 @@ To use this example class, manually install it in your project's python path and
 
 You can find more on example usage in the included unit tests [here](https://github.com/CleverTap/clevertap-server-api-examples/blob/master/python/api_v1/tests.py).
 
-### Push Notification Targets API Usage
+#### Push Notification Targets API Usage
 
     from clevertap import CleverTap
 
