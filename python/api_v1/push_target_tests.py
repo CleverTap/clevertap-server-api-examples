@@ -56,7 +56,7 @@ class CleverTapTargetTests(unittest.TestCase):
         res = self.clevertap.targets(self.clevertap.TargetActions.CREATE, payload) or {}
         print res
         status = res.get("status", None)
-        self.assertEqual(status, "success", "list status is %s"%status)
+        self.assertEqual(status, "success", "create status is %s"%status)
 
     def test_estimate(self):
         payload = {
@@ -95,7 +95,7 @@ class CleverTapTargetTests(unittest.TestCase):
         res = self.clevertap.targets(self.clevertap.TargetActions.ESTIMATE, payload) or {}
         print res
         status = res.get("status", None)
-        self.assertEqual(status, "success", "list status is %s"%status)
+        self.assertEqual(status, "success", "estimate status is %s"%status)
 
     def test_list(self):
         payload = {"from": 20160101, "to": 20160312} 

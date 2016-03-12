@@ -39,3 +39,27 @@ To use this example class, manually install it in your project's python path and
     res = clevertap.events(query)
 
 You can find more on example usage in the included unit tests [here](https://github.com/CleverTap/clevertap-server-api-examples/blob/master/python/api_v1/tests.py).
+
+### Push Notification Targets API Usage
+
+    from clevertap import CleverTap
+
+    clevertap = CleverTap(YOUR_CT_ACCOUNT_ID, YOUR_CT_ACCOUNT_PASSCODE)
+
+    # create a new push notification target
+    res = clevertap.targets(clevertap.TargetActions.CREATE, payload)
+
+    # estimate reach on a potential target (returns an estimate, doesn't create)
+    res = clevertap.targets(clevertap.TargetActions.ESTIMATE, payload)
+
+    # list created targets
+    res = clevertap.targets(clevertap.TargetActions.LIST, payload)
+
+    # stop a running target
+    res = clevertap.targets(clevertap.TargetActions.STOP, payload)
+
+    # get the results of a target
+    res = clevertap.targets(clevertap.TargetActions.RESULT, payload)
+
+You can find more on example push targets usage in the included unit tests [here](https://github.com/CleverTap/clevertap-server-api-examples/blob/master/python/api_v1/push_targets_tests.py).
+
