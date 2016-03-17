@@ -107,6 +107,31 @@ class CleverTap(object):
         # make the request
         return self._call(body=body, headers_params=headers_params)
 
+    def profile(self, email=None, identity=None, objectId=None):
+        """fetch an individual user profile by ID, one of email, identity or CleverTap objectID"""
+
+        if email is None and identity is None and objectId is None:
+            raise Exception("profile requires one of email, identity or objectId")
+            return
+
+        # construct the request url
+        self.url = '/'.join([self.api_endpoint, "profile.json"])
+
+        if email is not None:
+            self.url += "?email=%s" % email
+
+        elif identity is not None:
+            self.url += "?identity=%s" % identity
+
+        elif objectId is not None:
+            self.url += "?objectId=%s" % objectId
+
+        # request headers
+        headers_params = {'Content-Type':'application/json'}
+
+        # make the request
+        return self._call(headers_params=headers_params)
+
     def profiles(self, query, batch_size=10):
         """download profiles defined by query"""
         return self._fetch_records("profiles", query, batch_size=batch_size)

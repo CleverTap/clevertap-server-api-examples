@@ -114,6 +114,12 @@ class CleverTapTests(unittest.TestCase):
             print res[0]
         self.assertTrue( len(res) > 0 )
 
+    def test_profile_by_id(self):
+        res = self.clevertap.profile(identity="6264372124") or {}
+        print res
+        self.assertTrue( res.get("status", None) == "success" )
+
+
 if __name__ == "__main__":
     suite = unittest.TestLoader().loadTestsFromTestCase(CleverTapTests)
     unittest.TextTestRunner(verbosity=2).run(suite)
