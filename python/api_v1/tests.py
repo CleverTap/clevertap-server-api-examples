@@ -6,6 +6,7 @@ import random
 from clevertap import CleverTap
 
 CT_ACCOUNT_ID = "948-4KK-444Z"
+#CT_ACCOUNT_ID = "TEST-948-4KK-444Z"
 CT_ACCOUNT_PASSCODE = "QAE-AWB-AAAL"
 
 foods = ['pizza', 'burgers', 'sushi']
@@ -21,7 +22,7 @@ class CleverTapTests(unittest.TestCase):
                     "identity":"6264372124",
                     "evtName":"choseNewFavoriteFood", 
                     "evtData":{
-                        "value":random.choice(foods)
+                        "value":random.choice(foods),
                         },
                     },
 
@@ -91,8 +92,8 @@ class CleverTapTests(unittest.TestCase):
                 "choseNewFavoriteFood",
                 "props": 
                 [{"name":"value","operator":"contains", "value":"piz"}],
-                "from": 20150810,
-                "to": 20151025
+                "from": 20160810,
+                "to": 20170208
                 }
 
         res = self.clevertap.events(query)
@@ -105,8 +106,8 @@ class CleverTapTests(unittest.TestCase):
                 "choseNewFavoriteFood",
                 "props": 
                 [{"name":"value","operator":"contains", "value":"piz"}],
-                "from": 20150810,
-                "to": 20151025
+                "from": 20160810,
+                "to": 20170208
                 }
 
         res = self.clevertap.profiles(query)

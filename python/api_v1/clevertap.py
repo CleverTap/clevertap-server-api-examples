@@ -19,6 +19,7 @@ __all__ = ['CleverTap']
 import json
 import urllib
 import urllib2
+import time
 
 class CleverTap(object):
     api_hostname = 'api.clevertap.com'
@@ -161,15 +162,26 @@ class CleverTap(object):
         # add query and batch_size as query args
         self.url = "%s?%s"%(self.baseurl, _args)
 
-        # request headers
         headers_params = {'Content-Type':'application/json;charset=utf-8'}
 
-        # make the request
-        res = self._call(headers_params=headers_params) or {}
+        # fetch initial cursor
+        while True:
+            print 'fetching initial cursor'
+            res = self._call(headers_params=headers_params) or {}
 
-        # initial request is for the cursor
+            if 'error' in res:
+                print res
+                if res.get('code', -1) == 1:
+                    print "request throttled, retrying in 30"
+                    time.sleep(30)
+                else:
+                    # some other error abort
+                    return self.records
+            else:
+                break
+
         self.cursor = res.get("cursor", None)
-        
+
         # if we have a cursor then make a second request with the cursor
         if self.cursor:
 
@@ -180,8 +192,20 @@ class CleverTap(object):
 
             # convenience inner function to handle cursor requests 
             def call_records():
+                print "calling %s records" % batch_size 
+
                 # make the request
                 res = self._call() or {}
+
+                # make sure the cursor is ready with data
+                cursor_ready =  not 'error' in res
+                if not cursor_ready:
+                    print res
+                    if res.get('code', -1) == 2:
+                        wait_interval = 5
+                        print "cursor not ready, retrying again in %s" % wait_interval
+                        time.sleep(wait_interval)
+                        return
 
                 # parse response
                 self.cursor = res.get("next_cursor", None)
@@ -189,6 +213,8 @@ class CleverTap(object):
 
                 # add the new records array to our records array
                 self.records += new_records
+
+                print "Received %s records; have %s total records" % (len(new_records), len(self.records))
 
                 # if the request returns a new cursor, update the api url with the new cursor
                 if self.cursor:
@@ -199,9 +225,11 @@ class CleverTap(object):
 
             # keep making requests with the new cursor as long as we have a cursor 
             while True:
-                if self.cursor == None:
+                if self.cursor is None:
+                    print "no cursor, finished fetching records"
                     break
                 else:
+                    print "have cursor %s" % self.cursor
                     call_records()
 
         return self.records
@@ -346,6 +374,24 @@ class CleverTap(object):
                         validation_error = "record with type event must contain an evtData dict: %s"%record
                         return validation_error
                         break
+
+        if type == "profiles":
+            # query = json.loads(data)
+
+            # event_name is a compulsory parameter
+            if "event_name" not in data:
+                validation_error = "Event Name is missing"
+                return validation_error
+
+            # from is a compulsory parameter
+            if "from" not in data:
+                validation_error = "\'From\' is missing"
+                return validation_error
+
+            # to is a compulsory parameter
+            if "to" not in data:
+                validation_error = "\'To\' is missing"
+                return validation_error
 
         return validation_error
 
